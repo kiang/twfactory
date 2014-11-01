@@ -4,72 +4,147 @@ App::uses('HttpSocket', 'Network/Http');
 
 class FactoryShell extends AppShell {
 
+    public $types = array(
+        '01' => '股份有限公司',
+        '02' => '有限公司',
+        '03' => '無限公司',
+        '04' => '兩合公司',
+        '05' => '合夥',
+        '06' => '獨資',
+        '07' => '外國公司認許',
+        '08' => '外國公司報備',
+        '09' => '本國公司之分公司',
+        '10' => '外國公司之分公司',
+        '11' => '合作社',
+        '12' => '農會組織',
+        '13' => '公營',
+        '14' => '漁會',
+        '15' => '大陸公司許可登記',
+        '16' => '大陸公司許可報備',
+        '17' => '大陸公司之分公司',
+        '99' => '其他',
+    );
+    public $status = array(
+        '00' => '生產中',
+        '01' => '停工',
+        '02' => '歇業',
+        '03' => '設立未登記',
+        '04' => '公告註銷',
+        '05' => '設立許可逾期失效',
+        '06' => '設立許可註銷',
+        '07' => '設立許可撤銷',
+        '08' => '設立許可廢止',
+        '09' => '歇業-遷廠',
+        '10' => '歇業-產業類別變更',
+        '11' => '歇業-關廠',
+        '12' => '校正後廢止',
+        '13' => '勒令停工-工業主管機關',
+        '14' => '勒令停工-勞工主管機關',
+        '16' => '勒令停工-消防主管機關',
+        '17' => '勒令停工-其他',
+    );
+    public $cities = array(
+        '630' => '臺北市',
+        '10017' => '基隆市',
+        '650' => '新北市',
+        '10002' => '宜蘭縣',
+        '10004' => '新竹縣',
+        '10018' => '新竹市',
+        '10003' => '桃園縣',
+        '10005' => '苗栗縣',
+        '660' => '臺中市',
+        '10007' => '彰化縣',
+        '10008' => '南投縣',
+        '10020' => '嘉義市',
+        '10010' => '嘉義縣',
+        '10009' => '雲林縣',
+        '670' => '臺南市',
+        '640' => '高雄市',
+        '10016' => '澎湖縣',
+        '10013' => '屏東縣',
+        '10014' => '臺東縣',
+        '10015' => '花蓮縣',
+        '09020' => '金門縣',
+        '09007' => '連江縣', parseFactories
+    );
+
     public function main() {
         $this->postForm();
+        $this->parseFactories();
     }
 
     public function parseFactories() {
-        $pool = TMP . 'factory';
-        $oFh = fopen($pool . '/factories.csv', 'w');
-        fputcsv($oFh, array(
-            '公司（營利事業）統一編號',
-            '工廠登記編號',
-            '工廠名稱',
-            '工廠地址',
-        ));
-        foreach (glob($pool . '/factory_*') AS $factoryFile) {
-            $c = file_get_contents($factoryFile);
-            $pos = strpos($c, '<font color="#333399" size="2">');
-            $data = array(
-                '工廠名稱' => trim(strip_tags(substr($c, $pos, strpos($c, '</font>', $pos) - $pos))),
-            );
-            $pos = strpos($c, '<table', $pos);
-            $posEnd = strpos($c, '</table>', $pos);
-            $lines = explode('</tr>', substr($c, $pos, $posEnd - $pos));
-            foreach ($lines AS $line) {
-                $cols = explode('</td>', $line);
-                foreach ($cols AS $k => $v) {
-                    $cols[$k] = trim(strip_tags($v));
-                }
-                switch (count($cols)) {
-                    case 5:
-                        $data[$cols[2]] = $cols[3];
-                    case 3:
-                        $data[$cols[0]] = $cols[1];
-                        break;
+        $target = __DIR__ . '/data';
+        $HttpSocket = new HttpSocket();
+        foreach ($this->cities AS $cityCode => $cityName) {
+            foreach ($this->types AS $typeCode => $typeName) {
+                foreach ($this->status AS $statusCode => $statusName) {
+                    $listFile = "{$target}/lists/{$cityCode}/{$typeCode}_{$statusCode}.csv";
+                    if (file_exists($listFile) && filesize($listFile) > 0) {
+                        echo "processing lists/{$cityCode}/{$typeCode}_{$statusCode}.csv\n";
+                        $fh = fopen($listFile, 'r');
+                        while ($line = fgetcsv($fh, 2048)) {
+                            /*
+                             * $line = array(id, name, link)
+                             */
+                            $output = "{$target}/details/" . substr($line[0], 0, 2) . '/' . substr($line[0], 2, 2);
+                            if (!file_exists($output)) {
+                                mkdir($output, 0777, true);
+                            }
+                            $output .= '/' . $line[0] . '.json';
+                            if (!file_exists($output)) {
+                                $c = mb_convert_encoding(file_get_contents($line[2]), 'utf8', 'big5');
+                                $data = array(
+                                    '工廠名稱' => $line[1],
+                                    '原始資料網址' => $line[2],
+                                );
+                                $pos = strpos($c, '<table', strpos($c, '<font color="#333399" size="2">'));
+                                $posEnd = strpos($c, '</table>', $pos);
+                                $lines = explode('</tr>', substr($c, $pos, $posEnd - $pos));
+                                foreach ($lines AS $line) {
+                                    $cols = explode('</td>', $line);
+                                    foreach ($cols AS $k => $v) {
+                                        $cols[$k] = trim(strip_tags($v));
+                                    }
+                                    switch (count($cols)) {
+                                        case 5:
+                                            $data[$cols[2]] = $cols[3];
+                                        case 3:
+                                            $data[$cols[0]] = $cols[1];
+                                            break;
+                                    }
+                                }
+                                $pos = strpos($c, '<font size="2">產業類別</font>', $posEnd);
+                                $posEnd = strpos($c, '</table>', $pos);
+                                $lines = explode('</tr>', substr($c, $pos, $posEnd - $pos));
+                                $lines[0] = trim(strip_tags($lines[0]));
+                                $lines[2] = trim(strip_tags($lines[2]));
+                                $areas = explode('<BR>', $lines[1]);
+                                foreach ($areas AS $k => $v) {
+                                    $v = trim(strip_tags($v));
+                                    unset($areas[$k]);
+                                    if (!empty($v)) {
+                                        $vLines = explode("\n", $v);
+                                        $areas[trim($vLines[0])] = trim($vLines[1]);
+                                    }
+                                }
+                                $products = explode('<BR>', $lines[3]);
+                                foreach ($products AS $k => $v) {
+                                    $v = trim(strip_tags($v));
+                                    unset($products[$k]);
+                                    if (!empty($v)) {
+                                        $vLines = explode("\n", $v);
+                                        $products[trim($vLines[0])] = trim($vLines[1]);
+                                    }
+                                }
+                                $data[$lines[0]] = $areas;
+                                $data[$lines[2]] = $products;
+                                file_put_contents($output, json_encode($data));
+                            }
+                        }
+                    }
                 }
             }
-            $pos = strpos($c, '<font size="2">產業類別</font>', $posEnd);
-            $posEnd = strpos($c, '</table>', $pos);
-            $lines = explode('</tr>', substr($c, $pos, $posEnd - $pos));
-            $lines[0] = trim(strip_tags($lines[0]));
-            $lines[2] = trim(strip_tags($lines[2]));
-            $areas = explode('<BR>', $lines[1]);
-            foreach ($areas AS $k => $v) {
-                $v = trim(strip_tags($v));
-                unset($areas[$k]);
-                if (!empty($v)) {
-                    $vLines = explode("\n", $v);
-                    $areas[trim($vLines[0])] = trim($vLines[1]);
-                }
-            }
-            $products = explode('<BR>', $lines[3]);
-            foreach ($products AS $k => $v) {
-                $v = trim(strip_tags($v));
-                unset($products[$k]);
-                if (!empty($v)) {
-                    $vLines = explode("\n", $v);
-                    $products[trim($vLines[0])] = trim($vLines[1]);
-                }
-            }
-            $data[$lines[0]] = $areas;
-            $data[$lines[2]] = $products;
-            fputcsv($oFh, array(
-                $data['公司（營利事業）統一編號'],
-                $data['工廠登記編號'],
-                $data['工廠名稱'],
-                $data['工廠地址'],
-            ));
         }
     }
 
@@ -93,85 +168,16 @@ class FactoryShell extends AppShell {
     }
 
     public function postForm() {
-        $types = array(
-            '01' => '股份有限公司',
-            '02' => '有限公司',
-            '03' => '無限公司',
-            '04' => '兩合公司',
-            '05' => '合夥',
-            '06' => '獨資',
-            '07' => '外國公司認許',
-            '08' => '外國公司報備',
-            '09' => '本國公司之分公司',
-            '10' => '外國公司之分公司',
-            '11' => '合作社',
-            '12' => '農會組織',
-            '13' => '公營',
-            '14' => '漁會',
-            '15' => '大陸公司許可登記',
-            '16' => '大陸公司許可報備',
-            '17' => '大陸公司之分公司',
-            '99' => '其他',
-        );
-        $status = array(
-            '00' => '生產中',
-            '01' => '停工',
-            '02' => '歇業',
-            '03' => '設立未登記',
-            '04' => '公告註銷',
-            '05' => '設立許可逾期失效',
-            '06' => '設立許可註銷',
-            '07' => '設立許可撤銷',
-            '08' => '設立許可廢止',
-            '09' => '歇業-遷廠',
-            '10' => '歇業-產業類別變更',
-            '11' => '歇業-關廠',
-            '12' => '校正後廢止',
-            '13' => '勒令停工-工業主管機關',
-            '14' => '勒令停工-勞工主管機關',
-            '16' => '勒令停工-消防主管機關',
-            '17' => '勒令停工-其他',
-        );
-        $cities = array(
-            '630' => '臺北市',
-            '10017' => '基隆市',
-            '650' => '新北市',
-            '10002' => '宜蘭縣',
-            '10004' => '新竹縣',
-            '10018' => '新竹市',
-            '10003' => '桃園縣',
-            '10005' => '苗栗縣',
-            '660' => '臺中市',
-            '10007' => '彰化縣',
-            '10008' => '南投縣',
-            '10020' => '嘉義市',
-            '10010' => '嘉義縣',
-            '10009' => '雲林縣',
-            '670' => '臺南市',
-            '640' => '高雄市',
-            '10016' => '澎湖縣',
-            '10013' => '屏東縣',
-            '10014' => '臺東縣',
-            '10015' => '花蓮縣',
-            '09020' => '金門縣',
-            '09007' => '連江縣',
-        );
-        $pool = TMP . 'factory';
         $target = __DIR__ . '/data';
         $HttpSocket = new HttpSocket();
-        if (!file_exists($pool)) {
-            mkdir($pool, 0777, true);
-        }
-        if (!file_exists($target)) {
-            mkdir($target, 0777, true);
-        }
-        foreach ($cities AS $cityCode => $cityName) {
-            foreach ($types AS $typeCode => $typeName) {
-                foreach ($status AS $statusCode => $statusName) {
+        foreach ($this->cities AS $cityCode => $cityName) {
+            foreach ($this->types AS $typeCode => $typeName) {
+                foreach ($this->status AS $statusCode => $statusName) {
                     if (!file_exists("{$target}/lists/{$cityCode}")) {
                         mkdir("{$target}/lists/{$cityCode}", 0777, true);
                     }
                     if (!file_exists("{$target}/lists/{$cityCode}/{$typeCode}_{$statusCode}.csv")) {
+                        echo "processing lists/{$cityCode}/{$typeCode}_{$statusCode}.csv\n";
                         $h = fopen("{$target}/lists/{$cityCode}/{$typeCode}_{$statusCode}.csv", 'w');
                         $firstPage = $HttpSocket->post(
                                 'http://gcis.nat.gov.tw/Fidbweb/factInfoListAction.do', array(
