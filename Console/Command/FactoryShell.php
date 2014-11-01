@@ -125,7 +125,9 @@ class FactoryShell extends AppShell {
                                     unset($areas[$k]);
                                     if (!empty($v)) {
                                         $vLines = explode("\n", $v);
-                                        $areas[trim($vLines[0])] = trim($vLines[1]);
+                                        if (isset($vLines[1])) {
+                                            $areas[trim($vLines[0])] = trim($vLines[1]);
+                                        }
                                     }
                                 }
                                 $products = explode('<BR>', $lines[3]);
@@ -134,7 +136,9 @@ class FactoryShell extends AppShell {
                                     unset($products[$k]);
                                     if (!empty($v)) {
                                         $vLines = explode("\n", $v);
-                                        $products[trim($vLines[0])] = trim($vLines[1]);
+                                        if (isset($vLines[1])) {
+                                            $products[trim($vLines[0])] = trim($vLines[1]);
+                                        }
                                     }
                                 }
                                 $data[$lines[0]] = $areas;
