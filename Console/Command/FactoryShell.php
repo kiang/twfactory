@@ -65,7 +65,7 @@ class FactoryShell extends AppShell {
         '10014' => '臺東縣',
         '10015' => '花蓮縣',
         '09020' => '金門縣',
-        '09007' => '連江縣', parseFactories
+        '09007' => '連江縣',
     );
 
     public function main() {
