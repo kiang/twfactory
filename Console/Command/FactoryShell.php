@@ -4,6 +4,7 @@ App::uses('HttpSocket', 'Network/Http');
 
 class FactoryShell extends AppShell {
 
+    public $uses = array('Factory');
     public $types = array(
         '01' => '股份有限公司',
         '02' => '有限公司',
@@ -69,8 +70,151 @@ class FactoryShell extends AppShell {
     );
 
     public function main() {
-        $this->postForm();
-        $this->parseFactories();
+        $this->parseOpendata();
+    }
+
+    /*
+     * the file downloaded from http://data.gov.tw/node/6569
+     * http://www.cto.moea.gov.tw/04/factory.zip
+     */
+
+    public function parseOpendata() {
+        if (!file_exists(TMP . 'factory')) {
+            mkdir(TMP . 'factory', 0777, true);
+            $zip = new ZipArchive();
+            $res = $zip->open(__DIR__ . '/data/factory.zip');
+            if ($res === TRUE) {
+                $zip->extractTo(TMP . 'factory');
+                $zip->close();
+            }
+        }
+        $xml = new XMLReader();
+        $counter = 0;
+        $headers = array(
+            '工廠名稱',
+            '工廠登記編號',
+            '工廠設立許可案號',
+            '工廠地址',
+            '工廠市鎮鄉村里',
+            '工廠負責人姓名',
+            '營利事業統一編號',
+            '工廠組織型態',
+            '工廠設立核准日期',
+            '工廠登記核准日期',
+            '工廠登記狀態',
+            '產業類別',
+            '主要產品',
+        );
+        /*
+         * empty field
+         * Array
+          (
+          [工廠名稱] => 1
+          [工廠登記編號] => 1
+          [工廠設立許可案號] => 0
+          [工廠地址] => 0
+          [工廠市鎮鄉村里] => 1
+          [工廠負責人姓名] => 1
+          [營利事業統一編號] => 0
+          [工廠組織型態] => 0
+          [工廠設立核准日期] => 0
+          [工廠登記核准日期] => 1
+          [工廠登記狀態] => 1
+          [產業類別] => 0
+          [主要產品] => 0
+          )
+         * 
+         * max length
+         * Array
+          (
+          [工廠名稱] => 90          name
+          [工廠登記編號] => 8        id
+          [工廠設立許可案號] => 14    license_no
+          [工廠地址] => 1110        address
+          [工廠市鎮鄉村里] => 30     cunli
+          [工廠負責人姓名] => 36      owner
+          [營利事業統一編號] => 9     company_id
+          [工廠組織型態] => 24       type
+          [工廠設立核准日期] => 7     date_approved
+          [工廠登記核准日期] => 7     date_registered
+          [工廠登記狀態] => 9        status
+          [產業類別] => 362          * tags
+          [主要產品] => 593          * tags
+          )
+         */
+        $cat1 = $cat2 = array();
+        foreach (glob(TMP . 'factory/*.xml') AS $xmlFile) {
+            $xml->open($xmlFile);
+            while ($xml->read()) {
+                if ($xml->nodeType === XMLReader::ELEMENT && $xml->name === 'ROW') {
+                    $row = (array) simplexml_load_string($xml->readOuterXml(), 'SimpleXMLElement', LIBXML_NOCDATA);
+                    foreach ($row['COLUMN'] AS $k => $v) {
+                        $row['COLUMN'][$k] = is_string($v) ? $v : '';
+                    }
+                    $data = array(
+                        'Factory' => array(
+                            'id' => $row['COLUMN'][1],
+                            'name' => $row['COLUMN'][0],
+                            'license_no' => $row['COLUMN'][2],
+                            'address' => $row['COLUMN'][3],
+                            'cunli' => $row['COLUMN'][4],
+                            'owner' => $row['COLUMN'][5],
+                            'company_id' => $row['COLUMN'][6],
+                            'type' => $row['COLUMN'][7],
+                            'date_approved' => $this->getTwDate($row['COLUMN'][8]),
+                            'date_registered' => $this->getTwDate($row['COLUMN'][8]),
+                            'status' => $row['COLUMN'][10],
+                        ),
+                        'Tag' => array(),
+                    );
+                    if (!empty($row['COLUMN'][11])) {
+                        $row['COLUMN'][11] = explode(',', $row['COLUMN'][11]);
+                        foreach ($row['COLUMN'][11] AS $cat) {
+                            $code = substr($cat, 0, 2);
+                            if (!isset($cat1[$code])) {
+                                $this->Factory->Tag->create();
+                                $this->Factory->Tag->save(array('Tag' => array(
+                                        'name' => $cat,
+                                )));
+                                $cat1[$code] = $this->Factory->Tag->getInsertID();
+                            }
+                        }
+                    }
+                    if (!empty($row['COLUMN'][12])) {
+                        $row['COLUMN'][12] = explode(',', $row['COLUMN'][12]);
+
+                        foreach ($row['COLUMN'][12] AS $cat) {
+                            $code = substr($cat, 0, 3);
+                            $parentCode = substr($cat, 0, 2);
+                            if (!isset($cat2[$code])) {
+                                $this->Factory->Tag->create();
+                                $this->Factory->Tag->save(array('Tag' => array(
+                                        'parent_id' => $cat1[$parentCode],
+                                        'name' => $cat,
+                                )));
+                                $cat2[$code] = $this->Factory->Tag->getInsertID();
+                            }
+                            $data['Tag'][] = $cat2[$code];
+                        }
+                    }
+                    $this->Factory->create();
+                    $this->Factory->save($data);
+                }
+            }
+        }
+    }
+
+    public function getTwDate($str) {
+        if (empty($str)) {
+            return '';
+        }
+        $parts = array(
+            substr($str, 0, 3),
+            substr($str, 3, 2),
+            substr($str, 5, 2),
+        );
+        $parts[0] = intval($parts[0]) + 1911;
+        return implode('-', $parts);
     }
 
     public function parseFactories() {
