@@ -143,6 +143,9 @@ class FactoryShell extends AppShell {
           )
          */
         $cat1 = $cat2 = array();
+        $count = 0;
+        $fh = fopen(TMP . 'factory.sql', 'w');
+        $f = $ft = $pk = array();
         foreach (glob(TMP . 'factory/*.xml') AS $xmlFile) {
             $xml->open($xmlFile);
             while ($xml->read()) {
@@ -150,6 +153,11 @@ class FactoryShell extends AppShell {
                     $row = (array) simplexml_load_string($xml->readOuterXml(), 'SimpleXMLElement', LIBXML_NOCDATA);
                     foreach ($row['COLUMN'] AS $k => $v) {
                         $row['COLUMN'][$k] = is_string($v) ? $v : '';
+                    }
+                    if (!isset($pk[$row['COLUMN'][1]])) {
+                        $pk[$row['COLUMN'][1]] = true;
+                    } else {
+                        continue;
                     }
                     $data = array(
                         'Factory' => array(
@@ -194,12 +202,21 @@ class FactoryShell extends AppShell {
                                 )));
                                 $cat2[$code] = $this->Factory->Tag->getInsertID();
                             }
-                            $data['Tag'][] = $cat2[$code];
+                            $ft[] = "(NULL, '{$row['COLUMN'][1]}', '{$cat2[$code]}')";
                         }
                     }
-                    $this->Factory->create();
-                    $this->Factory->save($data);
+                    $values = implode('\', \'', $data['Factory']);
+                    $f[] = "('{$values}')";
+                    if (++$count % 50 === 0) {
+                        fputs($fh, "\nINSERT INTO factories_tags VALUES " . implode(',', $ft) . ';');
+                        fputs($fh, "\nINSERT INTO factories VALUES " . implode(',', $f) . ';');
+                        $f = $ft = array();
+                    }
                 }
+            }
+            if (!empty($f)) {
+                fputs($fh, "\nINSERT INTO factories_tags VALUES " . implode(',', $ft) . ';');
+                fputs($fh, "\nINSERT INTO factories VALUES " . implode(',', $f) . ';');
             }
         }
     }
