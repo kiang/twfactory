@@ -27,19 +27,22 @@ CREATE TABLE `factories` (
   `name` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL,
   `license_no` varchar(16) COLLATE utf8mb4_unicode_ci NOT NULL,
   `address` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `longitude` decimal(11,8) DEFAULT NULL,
+  `latitude` decimal(10,8) DEFAULT NULL,
   `cunli` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL,
   `owner` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL,
   `company_id` varchar(16) COLLATE utf8mb4_unicode_ci NOT NULL,
   `type` varchar(16) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `date_approved` date NOT NULL,
-  `date_registered` date NOT NULL,
+  `date_approved` date DEFAULT NULL,
+  `date_registered` date DEFAULT NULL,
   `status` varchar(16) COLLATE utf8mb4_unicode_ci NOT NULL,
   PRIMARY KEY (`id`),
   KEY `company_id` (`company_id`),
   KEY `date_registered` (`date_registered`),
   KEY `name` (`name`),
   KEY `address` (`address`(191)),
-  KEY `cunli` (`cunli`)
+  KEY `cunli` (`cunli`),
+  KEY `longitude` (`longitude`,`latitude`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -54,7 +57,8 @@ CREATE TABLE `factories_tags` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `factory_id` char(8) COLLATE utf8mb4_unicode_ci NOT NULL,
   `tag_id` int(11) unsigned NOT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `factory_id` (`factory_id`,`tag_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -85,4 +89,4 @@ CREATE TABLE `tags` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2015-07-21  2:03:30
+-- Dump completed on 2015-07-22  1:26:51

@@ -70,7 +70,48 @@ class FactoryShell extends AppShell {
     );
 
     public function main() {
+        //$this->geocode();
         $this->parseOpendata();
+    }
+
+    public function geocode() {
+        $addressMap = array();
+        $fh = fopen(__DIR__ . '/data/factories_address.csv', 'r');
+        while ($line = fgetcsv($fh, 2048)) {
+            $addressMap[$line[0]] = array(
+                $line[1], $line[2]
+            );
+        }
+        fclose($fh);
+        $fh = fopen(__DIR__ . '/data/factories_address.csv', 'w');
+        $factories = $this->Factory->find('all', array(
+            'fields' => array('address', 'latitude', 'longitude'),
+        ));
+        $notFoundLoopCount = 0;
+        foreach ($factories AS $factory) {
+            $address = $factory['Factory']['address'];
+            $pos = strpos($address, '號');
+            if (false !== $pos) {
+                $address = substr($address, 0, $pos) . '號';
+            }
+            $this->out($address);
+            if (!isset($addressMap[$address])) {
+                $addressMap[$address] = $this->Factory->geocode($address);
+            }
+            if (!empty($addressMap[$address])) {
+                $this->out("=> {$addressMap[$address][0]}, {$addressMap[$address][1]}");
+                fputcsv($fh, array($address, $addressMap[$address][0], $addressMap[$address][1]));
+                $notFoundLoopCount = 0;
+            } else {
+                ++$notFoundLoopCount;
+                $this->out('找不到');
+                if ($notFoundLoopCount > 10) {
+                    $this->out('太多找不到，中止');
+                    exit();
+                }
+            }
+        }
+        fclose($fh);
     }
 
     /*
@@ -88,6 +129,16 @@ class FactoryShell extends AppShell {
                 $zip->close();
             }
         }
+
+        $addressMap = array();
+        $fh = fopen(__DIR__ . '/data/factories_address.csv', 'r');
+        while ($line = fgetcsv($fh, 2048)) {
+            $addressMap[$line[0]] = array(
+                $line[1], $line[2]
+            );
+        }
+        fclose($fh);
+
         $xml = new XMLReader();
         $counter = 0;
         $headers = array(
@@ -159,12 +210,15 @@ class FactoryShell extends AppShell {
                     } else {
                         continue;
                     }
+
                     $data = array(
                         'Factory' => array(
                             'id' => $row['COLUMN'][1],
                             'name' => $row['COLUMN'][0],
                             'license_no' => $row['COLUMN'][2],
                             'address' => $row['COLUMN'][3],
+                            'longitude' => '',
+                            'latitude' => '',
                             'cunli' => $row['COLUMN'][4],
                             'owner' => $row['COLUMN'][5],
                             'company_id' => $row['COLUMN'][6],
@@ -175,6 +229,17 @@ class FactoryShell extends AppShell {
                         ),
                         'Tag' => array(),
                     );
+                    
+                    $address = $row['COLUMN'][3];
+                    $pos = strpos($address, '號');
+                    if (false !== $pos) {
+                        $address = substr($address, 0, $pos) . '號';
+                    }
+                    if (isset($addressMap[$address])) {
+                        $data['Factory']['longitude'] = $addressMap[$address][0];
+                        $data['Factory']['latitude'] = $addressMap[$address][1];
+                    }
+                    
                     if (!empty($row['COLUMN'][11])) {
                         $row['COLUMN'][11] = explode(',', $row['COLUMN'][11]);
                         foreach ($row['COLUMN'][11] AS $cat) {
