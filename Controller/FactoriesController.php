@@ -11,7 +11,7 @@ class FactoriesController extends AppController {
     public function beforeFilter() {
         parent::beforeFilter();
         if (isset($this->Auth)) {
-            $this->Auth->allow('index', 'view');
+            $this->Auth->allow('index', 'view', 'tag');
         }
     }
 
@@ -62,12 +62,29 @@ class FactoriesController extends AppController {
     }
 
     function view($id = null) {
-        if (!$id || !$this->data = $this->Factory->read(null, $id)) {
+        if (!empty($id)) {
+            $factory = $this->Factory->find('first', array(
+                'conditions' => array(
+                    'Factory.id' => $id,
+                ),
+                'contain' => array(
+                    'Tag' => array(
+                        'fields' => array('id'),
+                    ),
+                ),
+            ));
+        }
+        if (empty($factory)) {
             $this->Session->setFlash(__('Please do following links in the page', true));
             $this->redirect(array('action' => 'index'));
         }
-
-        if (intval($this->data['Factory']['latitude']) != 0 && intval($this->data['Factory']['longitude']) != 0) {
+        $tagNames = array();
+        foreach ($factory['Tag'] AS $tag) {
+            $tagNames[$tag['id']] = $this->Factory->Tag->getPath($tag['id'], array('id', 'name'));
+        }
+        $this->set('factory', $factory);
+        $this->set('tagNames', $tagNames);
+        if (intval($factory['Factory']['latitude']) != 0 && intval($factory['Factory']['longitude']) != 0) {
             $items = $this->Factory->find('near', array(
                 'fields' => array(
                     'id', 'name', 'address'
@@ -76,11 +93,63 @@ class FactoriesController extends AppController {
                 'distance' => 30,
                 'unit' => 'k',
                 'address' => array(
-                    $this->data['Factory']['latitude'],
-                    $this->data['Factory']['longitude'],
+                    $factory['Factory']['latitude'],
+                    $factory['Factory']['longitude'],
                 ),
             ));
             $this->set('nearPoints', $items);
+        }
+    }
+
+    public function tag($tagId = 0) {
+        $tagId = intval($tagId);
+        if ($tagId > 0) {
+            $tag = $this->Factory->Tag->find('first', array(
+                'conditions' => array('Tag.id' => $tagId),
+            ));
+        }
+        if (!empty($tag)) {
+            $scope = array(
+                'Tag.lft >=' => $tag['Tag']['lft'],
+                'Tag.rght <=' => $tag['Tag']['rght'],
+            );
+            $this->paginate['Factory'] = array(
+                'limit' => 20,
+                'order' => array('Factory.date_approved' => 'DESC'),
+                'joins' => array(
+                    array(
+                        'table' => 'factories_tags',
+                        'alias' => 'FactoriesTag',
+                        'type' => 'INNER',
+                        'conditions' => array(
+                            'Factory.id = FactoriesTag.factory_id',
+                        ),
+                    ),
+                    array(
+                        'table' => 'tags',
+                        'alias' => 'Tag',
+                        'type' => 'INNER',
+                        'conditions' => array(
+                            'Tag.id = FactoriesTag.tag_id',
+                        ),
+                    ),
+                ),
+            );
+            $items = $this->paginate($this->Factory, $scope);
+            $parents = $this->Factory->Tag->getPath($tagId, array('id', 'name'));
+            $this->set('url', array($tagId));
+            $this->set('tag', $tag);
+            $this->set('parents', $parents);
+            $this->set('children', $this->Factory->Tag->find('all', array(
+                        'fields' => array('id', 'name'),
+                        'order' => array('Tag.name' => 'ASC'),
+                        'conditions' => array('Tag.parent_id' => $tagId),
+            )));
+            $this->set('items', $items);
+            $this->set('title_for_layout', implode(' > ', Set::extract('{n}.Tag.name', $parents)) . ' 工廠一覽 @ ');
+        } else {
+            $this->Session->setFlash('請依據網頁指示操作');
+            $this->redirect(array('action' => 'index'));
         }
     }
 

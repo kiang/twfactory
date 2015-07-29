@@ -3,19 +3,19 @@
     <head>
         <?php echo $this->Html->charset(); ?>
         <title>
-工廠公示資料查詢系統::
+            工廠公示資料查詢系統::
             <?php echo $title_for_layout; ?>
         </title><?php
-            echo $this->Html->meta('icon');
-            echo $this->Html->css('jquery-ui');
-            echo $this->Html->css('bootstrap');
-            echo $this->Html->css('default');
-            echo $this->Html->script('bootstrap.min');
-            echo $this->Html->script('jquery');
-            echo $this->Html->script('jquery-ui');
-            echo $this->Html->script('olc');
-            echo $scripts_for_layout;
-            ?>
+        echo $this->Html->meta('icon');
+        echo $this->Html->css('jquery-ui');
+        echo $this->Html->css('bootstrap');
+        echo $this->Html->css('default');
+        echo $this->Html->script('bootstrap.min');
+        echo $this->Html->script('jquery');
+        echo $this->Html->script('jquery-ui');
+        echo $this->Html->script('olc');
+        echo $scripts_for_layout;
+        ?>
     </head>
     <body>
         <div class="container">
@@ -23,6 +23,10 @@
                 <h1><?php echo $this->Html->link('工廠公示資料查詢系統', '/'); ?></h1>
             </div>
             <div id="content">
+                <?php echo $this->Session->flash(); ?>
+                <div id="viewContent"><?php echo $content_for_layout; ?></div>
+            </div>
+            <div id="footer">
                 <div class="btn-group">
                     <?php if ($this->Session->read('Auth.User.id')): ?>
                         <?php echo $this->Html->link('工廠', '/admin/factories', array('class' => 'btn')); ?>
@@ -41,19 +45,6 @@
                     }
                     ?>
                 </div>
-
-                <?php echo $this->Session->flash(); ?>
-                <div id="viewContent"><?php echo $content_for_layout; ?></div>
-            </div>
-            <div id="footer">
-                <?php
-                echo $this->Html->link(
-                        $this->Html->image('cake.power.gif', array(
-                            'alt' => __("CakePHP: the rapid development php framework", true), 'border' => "0")
-                        ), 'http://www.cakephp.org/', array('target' => '_blank', 'escape' => false)
-                );
-                ?>
-                & <?php echo $this->Html->link('Just This Computer Studio', 'http://olc.tw/', array('target' => '_blank')); ?>
             </div>
         </div>
         <?php
@@ -61,8 +52,8 @@
         ?>
         <script type="text/javascript">
             //<![CDATA[
-            $(function() {
-                $('a.dialogControl').click(function() {
+            $(function () {
+                $('a.dialogControl').click(function () {
                     dialogFull(this);
                     return false;
                 });
