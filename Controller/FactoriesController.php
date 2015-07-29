@@ -1,6 +1,7 @@
 <?php
 
 App::uses('AppController', 'Controller');
+App::uses('Sanitize', 'Utility');
 
 class FactoriesController extends AppController {
 
@@ -15,50 +16,35 @@ class FactoriesController extends AppController {
         }
     }
 
-    function index($foreignModel = null, $foreignId = 0) {
-        $foreignId = intval($foreignId);
-        $foreignKeys = array();
-
-        $habtmKeys = array(
-            'Tag' => 'Tag_id',
-        );
-        $foreignKeys = array_merge($habtmKeys, $foreignKeys);
-
+    function index($name = null) {
         $scope = array();
-        if (array_key_exists($foreignModel, $foreignKeys) && $foreignId > 0) {
-            $scope['Factory.' . $foreignKeys[$foreignModel]] = $foreignId;
-
-            $joins = array(
-                'Tag' => array(
-                    0 => array(
-                        'table' => 'factories_tags',
-                        'alias' => 'FactoriesTag',
-                        'type' => 'inner',
-                        'conditions' => array('FactoriesTag.Factory_id = Factory.id'),
-                    ),
-                    1 => array(
-                        'table' => 'tags',
-                        'alias' => 'Tag',
-                        'type' => 'inner',
-                        'conditions' => array('FactoriesTag.Tag_id = Tag.id'),
-                    ),
-                ),
-            );
-            if (array_key_exists($foreignModel, $habtmKeys)) {
-                unset($scope['Factory.' . $foreignKeys[$foreignModel]]);
-                $scope[$joins[$foreignModel][0]['alias'] . '.' . $foreignKeys[$foreignModel]] = $foreignId;
-                $this->paginate['Factory']['joins'] = $joins[$foreignModel];
+        if (!empty($name)) {
+            $name = Sanitize::clean($name);
+            $keywords = explode(' ', $name);
+            $keywordCount = 0;
+            foreach ($keywords AS $keyword) {
+                if (++$keywordCount < 5) {
+                    $scope[]['OR'] = array(
+                        'Factory.company_id' => "{$keyword}",
+                        'Factory.name LIKE' => "%{$keyword}%",
+                        'Factory.address LIKE' => "%{$keyword}%",
+                        'Factory.cunli LIKE' => "%{$keyword}%",
+                    );
+                }
             }
-        } else {
-            $foreignModel = '';
+            $this->set('cleanKeyword', $name);
         }
-        $this->set('scope', $scope);
-        $this->paginate['Factory']['limit'] = 20;
-        $this->paginate['Factory']['order'] = array('Factory.date_approved' => 'DESC');
-        $items = $this->paginate($this->Factory, $scope);
-        $this->set('items', $items);
-        $this->set('foreignId', $foreignId);
-        $this->set('foreignModel', $foreignModel);
+        $this->paginate['Factory'] = array(
+            'limit' => 20,
+            'order' => array('Factory.date_registered' => 'DESC'),
+        );
+        $this->set('url', array($name));
+
+        if (!empty($name)) {
+            $name = "{$name} 相關";
+        }
+        $this->set('title_for_layout', $name . '工廠 @ ');
+        $this->set('items', $this->paginate($this->Foundation, $scope));
     }
 
     function view($id = null) {
@@ -101,7 +87,7 @@ class FactoriesController extends AppController {
         }
     }
 
-    public function tag($tagId = 0) {
+    public function tag($tagId = 0, $name = '') {
         $tagId = intval($tagId);
         if ($tagId > 0) {
             $tag = $this->Factory->Tag->find('first', array(
@@ -109,13 +95,30 @@ class FactoriesController extends AppController {
             ));
         }
         if (!empty($tag)) {
+
             $scope = array(
                 'Tag.lft >=' => $tag['Tag']['lft'],
                 'Tag.rght <=' => $tag['Tag']['rght'],
             );
+            if (!empty($name)) {
+                $name = Sanitize::clean($name);
+                $keywords = explode(' ', $name);
+                $keywordCount = 0;
+                foreach ($keywords AS $keyword) {
+                    if (++$keywordCount < 5) {
+                        $scope[]['OR'] = array(
+                            'Factory.company_id' => "{$keyword}",
+                            'Factory.name LIKE' => "%{$keyword}%",
+                            'Factory.address LIKE' => "%{$keyword}%",
+                            'Factory.cunli LIKE' => "%{$keyword}%",
+                        );
+                    }
+                }
+                $this->set('cleanKeyword', $name);
+            }
             $this->paginate['Factory'] = array(
                 'limit' => 20,
-                'order' => array('Factory.date_approved' => 'DESC'),
+                'order' => array('Factory.date_registered' => 'DESC'),
                 'joins' => array(
                     array(
                         'table' => 'factories_tags',
@@ -146,7 +149,11 @@ class FactoriesController extends AppController {
                         'conditions' => array('Tag.parent_id' => $tagId),
             )));
             $this->set('items', $items);
-            $this->set('title_for_layout', implode(' > ', Set::extract('{n}.Tag.name', $parents)) . ' 工廠一覽 @ ');
+            $prefix = implode(' > ', Set::extract('{n}.Tag.name', $parents));
+            if(!empty($name)) {
+                $prefix .= " [{$name}]";
+            }
+            $this->set('title_for_layout', $prefix . ' 工廠一覽 @ ');
         } else {
             $this->Session->setFlash('請依據網頁指示操作');
             $this->redirect(array('action' => 'index'));

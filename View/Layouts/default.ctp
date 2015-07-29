@@ -1,11 +1,20 @@
+<?php
+if (!isset($cleanKeyword)) {
+    $cleanKeyword = '';
+}
+?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="zh-TW">
     <head>
         <?php echo $this->Html->charset(); ?>
-        <title>
-            工廠公示資料查詢系統::
-            <?php echo $title_for_layout; ?>
-        </title><?php
+        <title><?php echo $title_for_layout; ?>工廠公示資料查詢</title><?php
+        $trailDesc = '提供簡單的介面檢索國內有登記立案的工廠';
+        if (!isset($desc_for_layout)) {
+            $desc_for_layout = $trailDesc;
+        } else {
+            $desc_for_layout .= $trailDesc;
+        }
+        echo $this->Html->meta('description', $desc_for_layout);
         echo $this->Html->meta('icon');
         echo $this->Html->css('jquery-ui');
         echo $this->Html->css('bootstrap');
@@ -21,6 +30,12 @@
         <div class="container">
             <div id="header">
                 <h1><?php echo $this->Html->link('工廠公示資料查詢系統', '/'); ?></h1>
+                <div class="pull-right">
+                    <input type="text" id="keyword" value="<?php echo $cleanKeyword; ?>" />
+                    <div class="btn-group">
+                        <a href="#" class="btn btn-default btn-factory">找工廠</a>
+                    </div>
+                </div>
             </div>
             <div id="content">
                 <?php echo $this->Session->flash(); ?>
@@ -53,8 +68,15 @@
         <script type="text/javascript">
             //<![CDATA[
             $(function () {
-                $('a.dialogControl').click(function () {
-                    dialogFull(this);
+                $('a.btn-factory').click(function () {
+                    var keyword = $('input#keyword').val();
+                    if (keyword !== '') {
+<?php if ($this->params->params['action'] !== 'tag') { ?>
+                            location.href = '<?php echo $this->Html->url('/factories/index/'); ?>' + encodeURIComponent(keyword);
+<?php } else { ?>
+                            location.href = '<?php echo $this->Html->url('/factories/tag/' . $tag['Tag']['id']); ?>/' + encodeURIComponent(keyword);
+<?php } ?>
+                    }
                     return false;
                 });
             });
