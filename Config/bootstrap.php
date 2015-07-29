@@ -83,6 +83,7 @@ Configure::write('Dispatcher.filters', array(
 ));
 
 CakePlugin::loadAll();
+require App::pluginPath('Permissible') . 'Config/init.php';
 
 /**
  * Configures default file logging options
