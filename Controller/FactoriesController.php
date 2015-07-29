@@ -8,6 +8,13 @@ class FactoriesController extends AppController {
     public $paginate = array();
     public $helpers = array();
 
+    public function beforeFilter() {
+        parent::beforeFilter();
+        if (isset($this->Auth)) {
+            $this->Auth->allow('index', 'view');
+        }
+    }
+
     function index($foreignModel = null, $foreignId = 0) {
         $foreignId = intval($foreignId);
         $foreignKeys = array();
@@ -58,6 +65,22 @@ class FactoriesController extends AppController {
         if (!$id || !$this->data = $this->Factory->read(null, $id)) {
             $this->Session->setFlash(__('Please do following links in the page', true));
             $this->redirect(array('action' => 'index'));
+        }
+
+        if (intval($this->data['Factory']['latitude']) != 0 && intval($this->data['Factory']['longitude']) != 0) {
+            $items = $this->Factory->find('near', array(
+                'fields' => array(
+                    'id', 'name', 'address'
+                ),
+                'limit' => 15,
+                'distance' => 30,
+                'unit' => 'k',
+                'address' => array(
+                    $this->data['Factory']['latitude'],
+                    $this->data['Factory']['longitude'],
+                ),
+            ));
+            $this->set('nearPoints', $items);
         }
     }
 

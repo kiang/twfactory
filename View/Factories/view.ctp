@@ -76,33 +76,27 @@
             ?>&nbsp;
         </div>
     </div>
+    
 </div>
 
 <?php if (!empty($nearPoints)) { ?>
-    <div class="box">
-        <div class="box-header">
-            <h4>附近醫事機構</h4>
-        </div>
-        <div class="box-body">
-            <?php
-            foreach ($nearPoints AS $nearPoint) {
-                ?><div class="col-md-4">
-                    <div class="box box-solid">
-                        <div class="box-header">
-                            <i class="fa fa-medkit"></i>
-                            <h3 class="box-title"><?php echo $this->Html->link($nearPoint['Point']['name'], '/points/view/' . $nearPoint['Point']['id']); ?></h3>
-                        </div>
-                        <div class="box-body">
-                            <i class="fa fa-phone"></i> <?php echo $nearPoint['Point']['phone']; ?>
-                            <br /><i class="fa fa-home"></i> <?php echo $nearPoint['Point']['address']; ?> (~<?php echo round($nearPoint['Point']['distance'], 2); ?>km)
-                        </div>
-                    </div>
-                </div><?php
-            }
-            ?>
-            <div class="clearfix"></div>
-        </div>
-    </div>
+    <p><br />&nbsp;</p><h1>附近工廠</h1>
+    <?php
+    foreach ($nearPoints AS $nearPoint) {
+        ?><div class="col-md-4">
+            <div class="box box-solid">
+                <div class="box-header">
+                    <i class="fa fa-medkit"></i>
+                    <h3 class="box-title"><?php echo $this->Html->link($nearPoint['Factory']['name'], '/factories/view/' . $nearPoint['Factory']['id']); ?></h3>
+                </div>
+                <div class="box-body">
+                    <i class="fa fa-home"></i> <?php echo $nearPoint['Factory']['address']; ?> (~<?php echo round($nearPoint['Factory']['distance'], 2); ?>km)
+                </div>
+            </div>
+        </div><?php
+    }
+    ?>
+    <div class="clearfix"></div>
 <?php } ?>
 <script>
     var factory = <?php echo json_encode($this->data['Factory']); ?>;
