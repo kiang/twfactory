@@ -1,22 +1,15 @@
+<h1><?php echo $this->data['Factory']['name']; ?></h1>
+<?php if (intval($this->data['Factory']['longitude']) != 0 && intval($this->data['Factory']['latitude']) != 0) { ?>
+    <div id="map" style="width: 100%; height: 400px;"></div>
+<?php } ?>
 <div id="FactoriesView">
-    <h3><?php echo __('View 工廠', true); ?></h3><hr />
     <div class="col-md-12">
-
-        <div class="col-md-2">名稱</div>
-        <div class="col-md-9"><?php
-            if ($this->data['Factory']['name']) {
-
-                echo $this->data['Factory']['name'];
-            }
-?>&nbsp;
-        </div>
         <div class="col-md-2">工廠設立許可案號</div>
         <div class="col-md-9"><?php
             if ($this->data['Factory']['license_no']) {
-
                 echo $this->data['Factory']['license_no'];
             }
-?>&nbsp;
+            ?>&nbsp;
         </div>
         <div class="col-md-2">住址</div>
         <div class="col-md-9"><?php
@@ -24,23 +17,7 @@
 
                 echo $this->data['Factory']['address'];
             }
-?>&nbsp;
-        </div>
-        <div class="col-md-2">經度</div>
-        <div class="col-md-9"><?php
-            if ($this->data['Factory']['longitude']) {
-
-                echo $this->data['Factory']['longitude'];
-            }
-?>&nbsp;
-        </div>
-        <div class="col-md-2">緯度</div>
-        <div class="col-md-9"><?php
-            if ($this->data['Factory']['latitude']) {
-
-                echo $this->data['Factory']['latitude'];
-            }
-?>&nbsp;
+            ?>&nbsp;
         </div>
         <div class="col-md-2">村里</div>
         <div class="col-md-9"><?php
@@ -48,7 +25,7 @@
 
                 echo $this->data['Factory']['cunli'];
             }
-?>&nbsp;
+            ?>&nbsp;
         </div>
         <div class="col-md-2">負責人</div>
         <div class="col-md-9"><?php
@@ -56,7 +33,7 @@
 
                 echo $this->data['Factory']['owner'];
             }
-?>&nbsp;
+            ?>&nbsp;
         </div>
         <div class="col-md-2">公司統編</div>
         <div class="col-md-9"><?php
@@ -64,7 +41,7 @@
 
                 echo $this->data['Factory']['company_id'];
             }
-?>&nbsp;
+            ?>&nbsp;
         </div>
         <div class="col-md-2">類型</div>
         <div class="col-md-9"><?php
@@ -72,7 +49,7 @@
 
                 echo $this->data['Factory']['type'];
             }
-?>&nbsp;
+            ?>&nbsp;
         </div>
         <div class="col-md-2">審核日期</div>
         <div class="col-md-9"><?php
@@ -80,7 +57,7 @@
 
                 echo $this->data['Factory']['date_approved'];
             }
-?>&nbsp;
+            ?>&nbsp;
         </div>
         <div class="col-md-2">登記日期</div>
         <div class="col-md-9"><?php
@@ -88,7 +65,7 @@
 
                 echo $this->data['Factory']['date_registered'];
             }
-?>&nbsp;
+            ?>&nbsp;
         </div>
         <div class="col-md-2">狀態</div>
         <div class="col-md-9"><?php
@@ -96,24 +73,40 @@
 
                 echo $this->data['Factory']['status'];
             }
-?>&nbsp;
+            ?>&nbsp;
         </div>
     </div>
-    <div class="actions">
-        <ul>
-            <li><?php echo $this->Html->link(__('工廠 List', true), array('action' => 'index')); ?> </li>
-            <li><?php echo $this->Html->link(__('View Related 標籤', true), array('controller' => 'tags', 'action' => 'index', 'Factory', $this->data['Factory']['id']), array('class' => 'FactoriesViewControl')); ?></li>
-        </ul>
-    </div>
-    <div id="FactoriesViewPanel"></div>
-    <script type="text/javascript">
-        //<![CDATA[
-        $(function() {
-            $('a.FactoriesViewControl').click(function() {
-                $('#FactoriesViewPanel').parent().load(this.href);
-                return false;
-            });
-        });
-        //]]>
-    </script>
 </div>
+
+<?php if (!empty($nearPoints)) { ?>
+    <div class="box">
+        <div class="box-header">
+            <h4>附近醫事機構</h4>
+        </div>
+        <div class="box-body">
+            <?php
+            foreach ($nearPoints AS $nearPoint) {
+                ?><div class="col-md-4">
+                    <div class="box box-solid">
+                        <div class="box-header">
+                            <i class="fa fa-medkit"></i>
+                            <h3 class="box-title"><?php echo $this->Html->link($nearPoint['Point']['name'], '/points/view/' . $nearPoint['Point']['id']); ?></h3>
+                        </div>
+                        <div class="box-body">
+                            <i class="fa fa-phone"></i> <?php echo $nearPoint['Point']['phone']; ?>
+                            <br /><i class="fa fa-home"></i> <?php echo $nearPoint['Point']['address']; ?> (~<?php echo round($nearPoint['Point']['distance'], 2); ?>km)
+                        </div>
+                    </div>
+                </div><?php
+            }
+            ?>
+            <div class="clearfix"></div>
+        </div>
+    </div>
+<?php } ?>
+<script>
+    var factory = <?php echo json_encode($this->data['Factory']); ?>;
+</script>
+<?php
+$this->Html->script('http://maps.google.com/maps/api/js?sensor=false', array('inline' => false));
+$this->Html->script('c/factories/view', array('inline' => false));
