@@ -119,5 +119,5 @@
     var factory = <?php echo json_encode($factory['Factory']); ?>;
 </script>
 <?php
-$this->Html->script('http://maps.google.com/maps/api/js?sensor=false', array('inline' => false));
+$this->Html->script('https://maps.google.com/maps/api/js?sensor=false', array('inline' => false));
 $this->Html->script('c/factories/view', array('inline' => false));
