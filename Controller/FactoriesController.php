@@ -85,6 +85,7 @@ class FactoriesController extends AppController {
             ));
             $this->set('nearPoints', $items);
         }
+        $this->set('title_for_layout', $factory['Factory']['name'] . ' @ ');
     }
 
     public function tag($tagId = 0, $name = '') {
