@@ -3,8 +3,8 @@ if (!isset($cleanKeyword)) {
     $cleanKeyword = '';
 }
 ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-TW">
+<!DOCTYPE html>
+<html lang="zh-TW">
     <head>
         <?php echo $this->Html->charset(); ?>
         <title><?php echo $title_for_layout; ?>工廠公示資料查詢</title><?php
@@ -15,15 +15,11 @@ if (!isset($cleanKeyword)) {
             $desc_for_layout .= $trailDesc;
         }
         echo $this->Html->meta('description', $desc_for_layout);
+        echo $this->Html->meta(array('name' => 'viewport', 'content' => 'width=device-width, initial-scale=1.0'));
         echo $this->Html->meta('icon');
         echo $this->Html->css('jquery-ui');
         echo $this->Html->css('bootstrap');
         echo $this->Html->css('default');
-        echo $this->Html->script('jquery');
-        echo $this->Html->script('jquery-ui');
-        echo $this->Html->script('bootstrap.min');
-        echo $this->Html->script('olc');
-        echo $scripts_for_layout;
         ?>
     </head>
     <body>
@@ -64,9 +60,13 @@ if (!isset($cleanKeyword)) {
         </div>
         <?php
         echo $this->element('sql_dump');
+        echo $this->Html->script('jquery');
+        echo $this->Html->script('jquery-ui');
+        echo $this->Html->script('bootstrap.min');
+        echo $this->Html->script('olc');
+        echo $scripts_for_layout;
         ?>
-        <script type="text/javascript">
-            //<![CDATA[
+        <script>
             $(function () {
                 $('a.btn-factory').click(function () {
                     var keyword = $('input#keyword').val();
@@ -80,7 +80,6 @@ if (!isset($cleanKeyword)) {
                     return false;
                 });
             });
-            //]]>
         </script>
     </body>
 </html>
