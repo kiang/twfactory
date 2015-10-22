@@ -23,43 +23,62 @@ if (!isset($cleanKeyword)) {
         ?>
     </head>
     <body>
-        <div class="container">
-            <div id="header">
-                <h1><?php echo $this->Html->link('工廠公示資料查詢系統', '/'); ?></h1>
-                <div class="pull-right">
-                    <input type="text" id="keyword" value="<?php echo $cleanKeyword; ?>" />
-                    <div class="btn-group">
-                        <a href="#" class="btn btn-default btn-factory">找工廠</a>
-                    </div>
+        <nav class="navbar navbar-default">
+            <div class="container">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <?php echo $this->Html->link('工廠公示資料查詢系統', '/', array('class' => 'navbar-brand')); ?>
+                </div>
+
+                <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                    <ul class="nav navbar-nav">
+                        <li class="active"><a href="./">首頁</a></li>
+                    </ul>
+                    <form class="navbar-form navbar-right" role="search">
+                        <div class="form-group">
+                            <input type="text" id="keyword" class="form-control" placeholder="搜尋…" value="<?php echo $cleanKeyword; ?>" autofocus>
+                        </div>
+                        <button type="submit" class="btn btn-info btn-factory">找工廠</button>
+                    </form>
                 </div>
             </div>
-            <div id="content">
-                <?php echo $this->Session->flash(); ?>
-                <div id="viewContent"><?php echo $content_for_layout; ?></div>
+        </nav>
+        <div class="container">
+            <div id="content" class="row">
+                <div class="col-md-12">
+                    <?php echo $this->Session->flash(); ?>
+                    <div id="viewContent"><?php echo $content_for_layout; ?></div>
+                </div>
             </div>
-            <div id="footer">
-                <div class="btn-group">
-                    <?php if ($this->Session->read('Auth.User.id')): ?>
-                        <?php echo $this->Html->link('工廠', '/admin/factories', array('class' => 'btn')); ?>
-                        <?php echo $this->Html->link('標籤', '/admin/tags', array('class' => 'btn')); ?>
-                        <?php echo $this->Html->link('Members', '/admin/members', array('class' => 'btn')); ?>
-                        <?php echo $this->Html->link('Groups', '/admin/groups', array('class' => 'btn')); ?>
-                        <?php echo $this->Html->link('Logout', '/members/logout', array('class' => 'btn')); ?>
-                    <?php else: ?>
-                        <?php echo $this->Html->link('Login', '/members/login', array('class' => 'btn')); ?>
-                    <?php endif; ?>
-                    <?php
-                    if (!empty($actions_for_layout)) {
-                        foreach ($actions_for_layout as $title => $url) {
-                            echo $this->Html->link($title, $url, array('class' => 'btn'));
+            <p>&nbsp;</p>
+            <div id="footer" class="row">
+                <div class="col-md-12">
+                    <div class="btn-group pull-right">
+                        <?php if ($this->Session->read('Auth.User.id')): ?>
+                            <?php echo $this->Html->link('工廠', '/admin/factories', array('class' => 'btn btn-default')); ?>
+                            <?php echo $this->Html->link('標籤', '/admin/tags', array('class' => 'btn btn-default')); ?>
+                            <?php echo $this->Html->link('Members', '/admin/members', array('class' => 'btn btn-default')); ?>
+                            <?php echo $this->Html->link('Groups', '/admin/groups', array('class' => 'btn btn-default')); ?>
+                            <?php echo $this->Html->link('Logout', '/members/logout', array('class' => 'btn btn-default')); ?>
+                        <?php else: ?>
+                            <?php echo $this->Html->link('Login', '/members/login', array('class' => 'btn btn-default')); ?>
+                        <?php endif; ?>
+                        <?php
+                        if (!empty($actions_for_layout)) {
+                            foreach ($actions_for_layout as $title => $url) {
+                                echo $this->Html->link($title, $url, array('class' => 'btn btn-default'));
+                            }
                         }
-                    }
-                    ?>
+                        ?>
+                    </div>
                 </div>
             </div>
         </div>
         <?php
-        echo $this->element('sql_dump');
         echo $this->Html->script('jquery');
         echo $this->Html->script('jquery-ui');
         echo $this->Html->script('bootstrap.min');
@@ -68,16 +87,22 @@ if (!isset($cleanKeyword)) {
         ?>
         <script>
             $(function () {
-                $('a.btn-factory').click(function () {
-                    var keyword = $('input#keyword').val();
+                $('form').on('submit', function (e) {
+                    var keyword = $('#keyword').val();
                     if (keyword !== '') {
-<?php if ($this->params->params['action'] !== 'tag') { ?>
+                    <?php if ($this->params->params['action'] !== 'tag') { ?>
                             location.href = '<?php echo $this->Html->url('/factories/index/'); ?>' + encodeURIComponent(keyword);
-<?php } else { ?>
+                    <?php } else { ?>
                             location.href = '<?php echo $this->Html->url('/factories/tag/' . $tag['Tag']['id']); ?>/' + encodeURIComponent(keyword);
-<?php } ?>
+                    <?php } ?>
+                    } else {
+                        $('.navbar-form .btn-factory').removeClass('btn-info').addClass('btn-danger');
+                        $('.navbar-form .form-group').addClass('has-error').one('keydown change', function () {
+                            $(this).removeClass('has-error');
+                            $('.navbar-form .btn-factory').removeClass('btn-danger').addClass('btn-info');
+                        });
                     }
-                    return false;
+                    e.preventDefault();
                 });
             });
         </script>
