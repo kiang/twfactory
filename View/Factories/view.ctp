@@ -2,73 +2,74 @@
 <?php if (intval($factory['Factory']['longitude']) != 0 && intval($factory['Factory']['latitude']) != 0) { ?>
     <div id="map" style="width: 100%; height: 400px;"></div>
 <?php } ?>
+<p>&nbsp;</p>
 <div id="FactoriesView">
-    <div class="col-md-12">
-        <div class="col-md-2">工廠設立許可案號</div>
-        <div class="col-md-9"><?php
+    <div class="row">
+        <div class="col-md-2 list-title">工廠設立許可案號</div>
+        <div class="col-md-9 list-desp"><?php
             if ($factory['Factory']['license_no']) {
                 echo $factory['Factory']['license_no'];
             }
             ?>&nbsp;
         </div>
-        <div class="col-md-2">住址</div>
-        <div class="col-md-9"><?php
+        <div class="col-md-2 list-title">住址</div>
+        <div class="col-md-9 list-desp"><?php
             if ($factory['Factory']['address']) {
 
                 echo $factory['Factory']['address'];
             }
             ?>&nbsp;
         </div>
-        <div class="col-md-2">村里</div>
-        <div class="col-md-9"><?php
+        <div class="col-md-2 list-title">村里</div>
+        <div class="col-md-9 list-desp"><?php
             if ($factory['Factory']['cunli']) {
 
                 echo $factory['Factory']['cunli'];
             }
             ?>&nbsp;
         </div>
-        <div class="col-md-2">負責人</div>
-        <div class="col-md-9"><?php
+        <div class="col-md-2 list-title">負責人</div>
+        <div class="col-md-9 list-desp"><?php
             if ($factory['Factory']['owner']) {
 
                 echo $factory['Factory']['owner'];
             }
             ?>&nbsp;
         </div>
-        <div class="col-md-2">公司統編</div>
-        <div class="col-md-9"><?php
+        <div class="col-md-2 list-title">公司統編</div>
+        <div class="col-md-9 list-desp"><?php
             if ($factory['Factory']['company_id']) {
 
                 echo $factory['Factory']['company_id'];
             }
             ?>&nbsp;
         </div>
-        <div class="col-md-2">類型</div>
-        <div class="col-md-9"><?php
+        <div class="col-md-2 list-title">類型</div>
+        <div class="col-md-9 list-desp"><?php
             if ($factory['Factory']['type']) {
 
                 echo $factory['Factory']['type'];
             }
             ?>&nbsp;
         </div>
-        <div class="col-md-2">審核日期</div>
-        <div class="col-md-9"><?php
+        <div class="col-md-2 list-title">審核日期</div>
+        <div class="col-md-9 list-desp"><?php
             if ($factory['Factory']['date_approved']) {
 
                 echo $factory['Factory']['date_approved'];
             }
             ?>&nbsp;
         </div>
-        <div class="col-md-2">登記日期</div>
-        <div class="col-md-9"><?php
+        <div class="col-md-2 list-title">登記日期</div>
+        <div class="col-md-9 list-desp"><?php
             if ($factory['Factory']['date_registered']) {
 
                 echo $factory['Factory']['date_registered'];
             }
             ?>&nbsp;
         </div>
-        <div class="col-md-2">狀態</div>
-        <div class="col-md-9"><?php
+        <div class="col-md-2 list-title">狀態</div>
+        <div class="col-md-9 list-desp"><?php
             if ($factory['Factory']['status']) {
 
                 echo $factory['Factory']['status'];
@@ -81,7 +82,8 @@
 
 <?php if (!empty($factory['Tag'])) { ?>
     <p>&nbsp;</p>
-    <h1>分類</h1>
+    <h2>分類</h2>
+    <hr>
     <?php
     foreach ($factory['Tag'] AS $tag) {
         echo '<ol class="breadcrumb" style="display: inline-block">';
@@ -99,7 +101,8 @@
 
 <?php if (!empty($nearPoints)) { ?>
     <p>&nbsp;</p>
-    <h1>附近工廠</h1>
+    <h2>附近工廠</h2>
+    <hr>
     <?php foreach ($nearPoints AS $nearPoint) { ?>
         <div class="col-md-4">
         <h3>

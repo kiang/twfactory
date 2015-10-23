@@ -215,3 +215,7 @@ div.code-coverage-results span.result-good {
 	content: "\e080";
 	vertical-align: bottom;
 }
+
+.list-title {
+	font-weight: bold;
+}
