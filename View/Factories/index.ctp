@@ -4,7 +4,7 @@ if (!isset($url)) {
 }
 ?>
 <div id="FactoriesIndex">
-    <div class="paging"><?php echo $this->element('paginator'); ?></div>
+    <div class="paginator-wrapper"><?php echo $this->element('paginator'); ?></div>
     <table class="table table-bordered" id="FactoriesIndexTable">
         <thead>
             <tr>
@@ -38,6 +38,6 @@ if (!isset($url)) {
             <?php }; // End of foreach ($items as $item) {  ?>
         </tbody>
     </table>
-    <div class="paging"><?php echo $this->element('paginator'); ?></div>
+    <div class="paginator-wrapper"><?php echo $this->element('paginator'); ?></div>
     <div id="FactoriesIndexPanel"></div>
 </div>
