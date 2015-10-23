@@ -202,3 +202,10 @@ div.code-coverage-results span.result-good {
 .paginator-wrapper {
 	text-align: center;
 }
+
+.text-ellipsis {
+	width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

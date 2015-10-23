@@ -97,22 +97,19 @@
 <?php } ?>
 
 <?php if (!empty($nearPoints)) { ?>
-    <p><br />&nbsp;</p><h1>附近工廠</h1>
-    <?php
-    foreach ($nearPoints AS $nearPoint) {
-        ?><div class="col-md-4">
-            <div class="box box-solid">
-                <div class="box-header">
-                    <i class="fa fa-medkit"></i>
-                    <h3 class="box-title"><?php echo $this->Html->link($nearPoint['Factory']['name'], '/factories/view/' . $nearPoint['Factory']['id']); ?></h3>
-                </div>
-                <div class="box-body">
-                    <i class="fa fa-home"></i> <?php echo $nearPoint['Factory']['address']; ?> (~<?php echo round($nearPoint['Factory']['distance'], 2); ?>km)
-                </div>
-            </div>
-        </div><?php
-    }
-    ?>
+    <p>&nbsp;</p>
+    <h1>附近工廠</h1>
+    <?php foreach ($nearPoints AS $nearPoint) { ?>
+        <div class="col-md-4">
+        <h3>
+            <span class="glyphicon glyphicon-briefcase text-muted"></span>
+            <?php echo $this->Html->link($nearPoint['Factory']['name'], '/factories/view/' . $nearPoint['Factory']['id']); ?>
+        </h3>
+        <div class="text-ellipsis text-muted" title="<?php echo $nearPoint['Factory']['address']; ?>">
+            (~<?php echo round($nearPoint['Factory']['distance'], 2); ?>公里)&nbsp;<?php echo $nearPoint['Factory']['address']; ?>
+        </div>
+        </div>
+    <?php } ?>
     <div class="clearfix"></div>
 <?php } ?>
 <script>
