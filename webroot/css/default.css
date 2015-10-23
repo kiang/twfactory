@@ -209,3 +209,9 @@ div.code-coverage-results span.result-good {
     text-overflow: ellipsis;
     white-space: nowrap;
 }
+
+.breadcrumb > li + li:before {
+	font-family: 'Glyphicons Halflings';
+	content: "\e080";
+	vertical-align: bottom;
+}

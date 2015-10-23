@@ -80,20 +80,21 @@
 </div>
 
 <?php if (!empty($factory['Tag'])) { ?>
-    <p><br />&nbsp;</p><h1>分類</h1>
-    <ul>
-        <?php
-        foreach ($factory['Tag'] AS $tag) {
-            $tree = array();
-            foreach ($tagNames[$tag['id']] AS $item) {
-                $tree[] = $this->Html->link($item['Tag']['name'], '/factories/tag/' . $item['Tag']['id']);
-            }
-            echo '<li>';
-            echo implode(' > ', $tree);
-            echo '</li>';
+    <p>&nbsp;</p>
+    <h1>分類</h1>
+    <?php
+    foreach ($factory['Tag'] AS $tag) {
+        echo '<ol class="breadcrumb" style="display: inline-block">';
+        foreach ($tagNames[$tag['id']] AS $item) {
+            echo $this->Html->tag(
+                'li',
+                $this->Html->link($item['Tag']['name'], '/factories/tag/' . $item['Tag']['id'])
+            );
         }
-        ?>
-    </ul>
+        echo '</ol>';
+        echo '<br>';
+    }
+    ?>
 <?php } ?>
 
 <?php if (!empty($nearPoints)) { ?>
