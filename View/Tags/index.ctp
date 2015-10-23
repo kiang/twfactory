@@ -12,7 +12,7 @@
             'format' => __('Page {:page} of {:pages}, showing {:current} records out of {:count} total, starting on record {:start}, ending on {:end}')
         ));
         ?></p>
-    <div class="paging"><?php echo $this->element('paginator'); ?></div>
+    <div class="paginator-wrapper"><?php echo $this->element('paginator'); ?></div>
     <table class="table table-bordered" id="TagsIndexTable">
         <thead>
             <tr>
@@ -54,16 +54,14 @@
             <?php }; // End of foreach ($items as $item) {  ?>
         </tbody>
     </table>
-    <div class="paging"><?php echo $this->element('paginator'); ?></div>
+    <div class="paginator-wrapper"><?php echo $this->element('paginator'); ?></div>
     <div id="TagsIndexPanel"></div>
-    <script type="text/javascript">
-        //<![CDATA[
+    <script>
         $(function() {
-            $('#TagsIndexTable th a, div.paging a, a.TagsIndexControl').click(function() {
+            $('#TagsIndexTable th a, div.paging a, a.TagsIndexControl').on('click', function (e) {
                 $('#TagsIndex').parent().load(this.href);
-                return false;
+                e.preventDafault();
             });
         });
-        //]]>
     </script>
 </div>
