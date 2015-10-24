@@ -55,9 +55,12 @@ if (!isset($cleanKeyword)) {
                 </div>
             </div>
             <p>&nbsp;</p>
-            <div id="footer" class="row">
-                <div class="col-md-12">
-                    <div class="btn-group pull-right">
+        </div>
+
+        <footer class="navbar-bottom navbar navbar-default">
+            <div class="container">
+                <div class="row">
+                    <ul class="pull-right">
                         <?php if ($this->Session->read('Auth.User.id')): ?>
                             <?php echo $this->Html->link('工廠', '/admin/factories', array('class' => 'btn btn-default')); ?>
                             <?php echo $this->Html->link('標籤', '/admin/tags', array('class' => 'btn btn-default')); ?>
@@ -74,10 +77,10 @@ if (!isset($cleanKeyword)) {
                             }
                         }
                         ?>
-                    </div>
+                    </ul>
                 </div>
             </div>
-        </div>
+        </footer>
         <?php
         echo $this->Html->script('jquery');
         echo $this->Html->script('jquery-ui');
